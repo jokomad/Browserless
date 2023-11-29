@@ -1,44 +1,35 @@
-FROM alpine:3.16
+FROM alpine:3.13.5
 
-LABEL maintainer="Don <novaspirit@novaspirit.com>"
+ENV NOVNC_TAG="v1.3.0"
 
-RUN apk add --no-cache sudo git xfce4 faenza-icon-theme bash python3 tigervnc xfce4-terminal firefox cmake wget \
-    pulseaudio xfce4-pulseaudio-plugin pavucontrol pulseaudio-alsa alsa-plugins-pulse alsa-lib-dev nodejs npm \
-    build-base \
-    && adduser -h /home/alpine -s /bin/bash -S -D alpine && echo -e "alpine\nalpine" | passwd alpine \
-    && echo 'alpine ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
-    && git clone https://github.com/novnc/noVNC /opt/noVNC \
-    && git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify \
-    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/script.js -O /opt/noVNC/script.js \
-    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/audify.js -O /opt/noVNC/audify.js \
-    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/vnc.html -O /opt/noVNC/vnc.html \
-    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/pcm-player.js -O /opt/noVNC/pcm-player.js
+ENV WEBSOCKIFY_TAG="v0.10.0"
 
+ENV VNC_SERVER "localhost:5900"
 
+RUN apk --no-cache --update --upgrade add \
+        bash \
+        python3 \
+        python3-dev \
+        gfortran \
+        py-pip \
+        build-base \
+        procps \
+        git
 
-RUN npm install --prefix /opt/noVNC ws
-RUN npm install --prefix /opt/noVNC audify
+RUN pip install --no-cache-dir numpy
 
-USER alpine
-WORKDIR /home/alpine
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN mkdir -p /home/alpine/.vnc \
-    && echo -e "-Securitytypes=none" > /home/alpine/.vnc/config \
-    && echo -e "#!/bin/bash\nstartxfce4 &" > /home/alpine/.vnc/xstartup \
-    && echo -e "alpine\nalpine\nn\n" | vncpasswd
+RUN git config --global advice.detachedHead false && \
+    git clone https://github.com/novnc/noVNC --branch ${NOVNC_TAG} /root/noVNC && \
+    git clone https://github.com/novnc/websockify --branch ${WEBSOCKIFY_TAG} /root/noVNC/utils/websockify
 
-USER root
+RUN cp /root/noVNC/vnc.html /root/noVNC/index.html
 
-RUN echo '\
-#!/bin/bash \
-/usr/bin/vncserver :99 2>&1 | sed  "s/^/[Xtigervnc ] /" & \
-sleep 1 & \
-/usr/bin/pulseaudio 2>&1 | sed  "s/^/[pulseaudio] /" & \
-sleep 1 & \
-/usr/bin/node /opt/noVNC/audify.js 2>&1 | sed "s/^/[audify    ] /" & \
-/opt/noVNC/utils/novnc_proxy --vnc localhost:5999 2>&1 | sed "s/^/[noVNC     ] /"'\
->/entry.sh
+RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$AUTOCONNECT\" ]; then sed -i \"s/'autoconnect', false/'autoconnect', '\$AUTOCONNECT'/\" /root/noVNC/app/ui.js; fi" /root/noVNC/utils/novnc_proxy
 
-USER alpine
+RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VNC_PASSWORD\" ]; then sed -i \"s/WebUtil.getConfigVar('password')/'\$VNC_PASSWORD'/\" /root/noVNC/app/ui.js; fi" /root/noVNC/utils/novnc_proxy
 
-ENTRYPOINT [ "/bin/bash", "/entry.sh" ]
+RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VIEW_ONLY\" ]; then sed -i \"s/UI.rfb.viewOnly = UI.getSetting('view_only');/UI.rfb.viewOnly = \$VIEW_ONLY;/\" /root/noVNC/app/ui.js; fi" /root/noVNC/utils/novnc_proxy
+
+ENTRYPOINT [ "bash", "-c", "/root/noVNC/utils/novnc_proxy --vnc ${VNC_SERVER}" ]
