@@ -16,7 +16,7 @@ RUN apk --no-cache --update --upgrade add \
         procps \
         git
 
-RUN pip install --no-cache-dir numpy
+
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
