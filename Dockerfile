@@ -1,41 +1,44 @@
-FROM alpine:3.3
+FROM alpine:3.16
 
-# Setup demo environment variables
-ENV HOME=/root \
-	DEBIAN_FRONTEND=noninteractive \
-	LANG=en_US.UTF-8 \
-	LANGUAGE=en_US.UTF-8 \
-	LC_ALL=C.UTF-8 \
-	DISPLAY=:0.0 \
-	DISPLAY_WIDTH=1024 \
-	DISPLAY_HEIGHT=768
+LABEL maintainer="Don <novaspirit@novaspirit.com>"
 
-# x11vnc is in testing repo
-RUN echo "http://dl-3.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk add --no-cache sudo git xfce4 faenza-icon-theme bash python3 tigervnc xfce4-terminal firefox cmake wget \
+    pulseaudio xfce4-pulseaudio-plugin pavucontrol pulseaudio-alsa alsa-plugins-pulse alsa-lib-dev nodejs npm \
+    build-base \
+    && adduser -h /home/alpine -s /bin/bash -S -D alpine && echo -e "alpine\nalpine" | passwd alpine \
+    && echo 'alpine ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
+    && git clone https://github.com/novnc/noVNC /opt/noVNC \
+    && git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify \
+    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/script.js -O /opt/noVNC/script.js \
+    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/audify.js -O /opt/noVNC/audify.js \
+    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/vnc.html -O /opt/noVNC/vnc.html \
+    && wget https://raw.githubusercontent.com/novaspirit/Alpine_xfce4_noVNC/dev/pcm-player.js -O /opt/noVNC/pcm-player.js
 
-# Install git, supervisor, VNC, & X11 packages
-RUN apk --update --upgrade add \
-	bash \
-	fluxbox \
-	git \
-	socat \
-	supervisor \
-	x11vnc \
-	xterm \
-	xvfb
 
-# Clone noVNC from github
-RUN git clone https://github.com/kanaka/noVNC.git /root/noVNC \
-	&& git clone https://github.com/kanaka/websockify /root/noVNC/utils/websockify \
-	&& rm -rf /root/noVNC/.git \
-	&& rm -rf /root/noVNC/utils/websockify/.git \
-	&& apk del git
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN npm install --prefix /opt/noVNC ws
+RUN npm install --prefix /opt/noVNC audify
 
-# Modify the launch script 'ps -p'
-RUN sed -i -- "s/ps -p/ps -o pid | grep/g" /root/noVNC/utils/launch.sh
+USER alpine
+WORKDIR /home/alpine
 
-EXPOSE 8080
+RUN mkdir -p /home/alpine/.vnc \
+    && echo -e "-Securitytypes=none" > /home/alpine/.vnc/config \
+    && echo -e "#!/bin/bash\nstartxfce4 &" > /home/alpine/.vnc/xstartup \
+    && echo -e "alpine\nalpine\nn\n" | vncpasswd
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+USER root
+
+RUN echo '\
+#!/bin/bash \
+/usr/bin/vncserver :99 2>&1 | sed  "s/^/[Xtigervnc ] /" & \
+sleep 1 & \
+/usr/bin/pulseaudio 2>&1 | sed  "s/^/[pulseaudio] /" & \
+sleep 1 & \
+/usr/bin/node /opt/noVNC/audify.js 2>&1 | sed "s/^/[audify    ] /" & \
+/opt/noVNC/utils/novnc_proxy --vnc localhost:5999 2>&1 | sed "s/^/[noVNC     ] /"'\
+>/entry.sh
+
+USER alpine
+
+ENTRYPOINT [ "/bin/bash", "/entry.sh" ]
