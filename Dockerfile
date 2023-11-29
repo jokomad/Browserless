@@ -2,7 +2,7 @@
 
 
 
-ENV VNC_SERVER "localhost:5800"
+
 
 FROM jlesage/baseimage-gui:alpine-3.18-v4.5.2
 
@@ -55,4 +55,4 @@ RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VNC_PASSWORD\" ]; then sed -i \"s/W
 
 RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VIEW_ONLY\" ]; then sed -i \"s/UI.rfb.viewOnly = UI.getSetting('view_only');/UI.rfb.viewOnly = \$VIEW_ONLY;/\" /root/noVNC/app/ui.js; fi" /root/noVNC/utils/novnc_proxy
 
-ENTRYPOINT [ "bash", "-c", "/root/noVNC/utils/novnc_proxy --vnc ${VNC_SERVER}" ]
+ENTRYPOINT [ "bash", "-c", "/root/noVNC/utils/novnc_proxy --vnc 5800" ]
