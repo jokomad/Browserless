@@ -1,3 +1,9 @@
+ENV NOVNC_TAG="v1.3.0"
+
+ENV WEBSOCKIFY_TAG="v0.10.0"
+
+ENV VNC_SERVER "localhost:5800"
+
 FROM jlesage/baseimage-gui:alpine-3.18-v4.5.2
 
 # Docker image version is provided via build arg.
