@@ -55,4 +55,4 @@ RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VNC_PASSWORD\" ]; then sed -i \"s/W
 
 RUN sed -i "/wait ${proxy_pid}/i if [ -n \"\$VIEW_ONLY\" ]; then sed -i \"s/UI.rfb.viewOnly = UI.getSetting('view_only');/UI.rfb.viewOnly = \$VIEW_ONLY;/\" /root/noVNC/app/ui.js; fi" /root/noVNC/utils/novnc_proxy
 
-ENTRYPOINT [ "bash", "-c", "/root/noVNC/utils/novnc_proxy --vnc 5800" ]
+ENTRYPOINT [ "bash", "-c", "/root/noVNC/utils/novnc_proxy --vnc 127.0.0.1:5901 --listen localhost:6080" ]
