@@ -18,7 +18,7 @@ RUN apk --no-cache --update --upgrade add \
         x11vnc
 
 
-
+RUN x11vnc -create
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN git config --global advice.detachedHead false && \
