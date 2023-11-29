@@ -1,6 +1,6 @@
-ENV NOVNC_TAG="v1.3.0"
 
-ENV WEBSOCKIFY_TAG="v0.10.0"
+
+
 
 ENV VNC_SERVER "localhost:5800"
 
@@ -44,8 +44,8 @@ RUN \
     true
 
 RUN git config --global advice.detachedHead false && \
-    git clone https://github.com/novnc/noVNC --branch ${NOVNC_TAG} /root/noVNC && \
-    git clone https://github.com/novnc/websockify --branch ${WEBSOCKIFY_TAG} /root/noVNC/utils/websockify
+    git clone https://github.com/novnc/noVNC /root/noVNC && \
+    git clone https://github.com/novnc/websockify /root/noVNC/utils/websockify
 
 RUN cp /root/noVNC/vnc.html /root/noVNC/index.html
 
