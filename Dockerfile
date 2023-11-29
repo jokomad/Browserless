@@ -14,7 +14,8 @@ RUN apk --no-cache --update --upgrade add \
         py-pip \
         build-base \
         procps \
-        git
+        git \
+        x11vnc
 
 
 
