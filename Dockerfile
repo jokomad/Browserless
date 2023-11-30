@@ -7,8 +7,9 @@ RUN add-pkg chromium-swiftshader
 
 # Copy the start script.
 
-RUN chmod +x startapp.sh
+
 COPY startapp.sh /startapp.sh
+RUN chmod +x /startapp.sh
 
 # Set the name of the application.
 RUN set-cont-env APP_NAME "chromium-browser"
