@@ -3,6 +3,7 @@
 FROM jlesage/baseimage-gui:alpine-3.18-v4
 
 WORKDIR /tmp
+USER root
 COPY rootfs/ /
 
 # Install xterm.
