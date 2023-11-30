@@ -6,6 +6,8 @@ FROM jlesage/baseimage-gui:alpine-3.18-v4
 RUN add-pkg chromium-swiftshader
 
 # Copy the start script.
+
+RUN chmod +x startapp.sh
 COPY startapp.sh /startapp.sh
 
 # Set the name of the application.
