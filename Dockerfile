@@ -9,3 +9,5 @@ COPY startapp.sh /startapp.sh
 
 # Set the name of the application.
 RUN set-cont-env APP_NAME "chromium-swiftshader"
+
+CMD exec /usr/bin/chromium-browser --user-data-dir=/config --no-sandbox --disable-setuid-sandbox --disable-gpu --disable-dev-shm-usage
