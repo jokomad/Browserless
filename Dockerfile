@@ -3,7 +3,7 @@
 FROM jlesage/baseimage-gui:alpine-3.18-v4
 
 WORKDIR /tmp
-COPY rootfs/
+COPY rootfs/ /
 
 # Install xterm.
 RUN add-pkg chromium-swiftshader
