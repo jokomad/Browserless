@@ -16,12 +16,12 @@ COPY startapp.sh /startapp.sh
 RUN chmod +x /startapp.sh
 
 
-COPY 1.tar.gz.parttaa /config/1.tar.gz.parttaa
-COPY 1.tar.gz.parttab /config/1.tar.gz.parttab
+#COPY 1.tar.gz.parttaa /config/1.tar.gz.parttaa
+#COPY 1.tar.gz.parttab /config/1.tar.gz.parttab
 
-RUN cat /config/1.tar.gz.partta* >/config/1.tar.gz
+#RUN cat /config/1.tar.gz.partta* >/config/1.tar.gz
 #RUN mkdir /config/1
-RUN cd /config && tar -xf /config/1.tar.gz 
+#RUN cd /config && tar -xf /config/1.tar.gz 
 
 
 
