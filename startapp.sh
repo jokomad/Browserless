@@ -6,4 +6,4 @@ exec chromium freebitco.in/?op=home --user-data-dir=/config/1 --disable-gpu --di
 sleep 240
 kill "$!"
 #exec file-roller 
-
+#
